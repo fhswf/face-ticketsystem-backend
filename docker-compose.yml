@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  app:
+    container_name: fts_backend
+    restart: always
+    build: .
+    #    env_file:
+    #      - docker.env
+    ports:
+      - "127.0.0.1:12000:12000"
+    volumes:
+      - /opt/fts:/opt/fts
+    links:
+      - mips
+      - mongo-fts
+
+  mips:
+    container_name: mips
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    env_file:
+      - docker.env
+    ports:
+      - "127.0.0.1::3306"
+      - "127.0.0.1::33060"
+    volumes:
+      - /opt/fts/mysql:/var/lib/mysql
+
+  mongo-fts:
+    container_name: mongo_fts
+    image: mongo
+    volumes:
+      - /opt/fts/mongo:/data/db
+    ports:
+      - "127.0.0.1:27017:27017"
