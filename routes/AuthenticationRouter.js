@@ -53,6 +53,24 @@ function generateJwtToken(user) {
     });
 }
 
+router.post('/checkEmail', (req, res, next) => {
+    if(req.body && req.body.hasOwnProperty('email')) {
+        User.findOne({email: req.body.email})
+            .then(user => {
+                console.log("checking", user);
+                res.send({
+                    occupied: !!user
+                });
+            })
+            .catch(err => {
+                res.send({occupied: false});
+            });
+    }
+    else {
+        res.send({occupied: false});
+    }
+});
+
 router.post('/register',
     upload.single('file'),
     async (req, res, next) => {
