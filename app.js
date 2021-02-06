@@ -12,6 +12,7 @@ const User = require('./persistence/ticketsystem/User');
 const Ticket = require('./persistence/ticketsystem/Ticket');
 
 let mainRouter = require('./routes/MainRouter');
+let disclosureRouter = require('./routes/DisclosureRouter');
 let authenticationRouter = require('./routes/AuthenticationRouter');
 
 let corsOptions = {
@@ -49,6 +50,7 @@ app.use(session({
 
 // Express Routes
 app.use('/', mainRouter);
+app.use('/disclosure', disclosureRouter);
 app.use('/auth', authenticationRouter);
 
 
