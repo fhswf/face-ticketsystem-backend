@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 const currencySchema = require('./CurrencySchema');
 const purchasedTicketSchema = require('./PurchasedTicketSchema');
-const {extendSchema} = require('../utils');
+const {extendSchema} = require('../persistenceUtils');
 
 // Buyers
 const buyerSchema = extendSchema(

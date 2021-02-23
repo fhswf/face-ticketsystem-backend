@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const User = require('../persistence/ticketsystem/User');
 const crypto = require('crypto');
 const config = require('../config');
@@ -9,7 +8,10 @@ const path = require('path');
 const upload = require('multer')();
 const fs = require('fs');
 const mime = require('mime-types');
-
+const utils = require('../utils');
+const {employeesInfoModel} = require('../persistence/mips/Models');
+const FormData = require('form-data');
+const fetch = require("node-fetch");
 
 function isLoggedIn(request) {
     return request.hasOwnProperty('session') && request.session.hasOwnProperty('user');
@@ -53,11 +55,68 @@ function generateJwtToken(user) {
     });
 }
 
+/**
+ * Persists a user in the MIPS database and creates it for every device.
+ * @param user The ticketsystem.User to be persisted as a mips.EmployeesInfo user.
+ * @param img The image (File) of the user to be registered.
+ * @returns {Promise<void>}
+ */
+async function createMIPSPerson(user, img) {
+    // Transform ticket user to MIPS user
+    let mipsUserObj = {
+        group_id: config.mips.defaultData.employeesInfo.groupId,
+        type: user.role === 'employee' ? 3 : 1,
+        upload_time: new Date(),
+        name: user.personal.firstname + ' ' + user.personal.lastname,
+        sex: user.personal.sex,
+        email: user.email,
+        phone_num: user.personal.phonenumber,
+        nation: user.personal.country,
+        address: user.personal.address1 + user.personal.address2 ? ' ' + user.personal.address2 : '',
+    };
+
+    // Create MIPS-Entry
+    let mipsUserDbEntry = await employeesInfoModel.create(mipsUserObj);
+
+    // Create MIPS-Device-Entries
+    for (let i = 0; i < config.mips.devices.length; i++) {
+        let device = config.mips.devices[i];
+        let formData = new FormData();
+
+        // Create MIPS-API entry for creating a person
+        let person = {
+            name: mipsUserDbEntry.name,
+            sex: mipsUserDbEntry.sex,
+            type: mipsUserDbEntry.type,
+            vipID: mipsUserDbEntry.id,
+            imgBase64: utils.file2base64(img)
+        };
+
+        // Create form data for API call
+        formData.append('pass', device.pass);
+        formData.append('person', JSON.stringify(person));
+
+        let payload = {
+            body: formData,
+            headers: '',
+            method: 'POST'
+        };
+
+        fetch(`http://${device.ip}${config.mips.deviceAPI.createPerson}`, payload)
+            .then(response => {
+                console.log("response.body", response.body)
+                console.info("Successfully called MIPS device.");
+            })
+            .catch(err => {
+                console.error(err);
+            })
+    }
+}
+
 router.post('/checkEmail', (req, res, next) => {
-    if(req.body && req.body.hasOwnProperty('email')) {
+    if (req.body && req.body.hasOwnProperty('email')) {
         User.findOne({email: req.body.email})
             .then(user => {
-                console.log("checking", user);
                 res.send({
                     occupied: !!user
                 });
@@ -70,6 +129,33 @@ router.post('/checkEmail', (req, res, next) => {
         res.send({occupied: false});
     }
 });
+
+router.post('/checkImage',
+    upload.single('file'),
+    (req, res, next) => {
+        // Check params
+        if (!req.file) {
+            return res.status(400).send({
+                hasImageOnlyOneFace: false,
+                message: 'Missing picture.'
+            });
+        }
+
+        // Check image
+        utils.hasImageOnlyOneFace(req.file)
+            .then(hasOnlyOneFace => {
+                return res.send({
+                    hasImageOnlyOneFace: hasOnlyOneFace
+                })
+            })
+            .catch(err => {
+                return res.send({
+                    hasImageOnlyOneFace: false,
+                    message: err.message
+                })
+            })
+    }
+);
 
 router.post('/register',
     upload.single('file'),
@@ -97,7 +183,7 @@ router.post('/register',
         let userObj = JSON.parse(req.body.user);
 
         // Hash password
-        if(!userObj.hasOwnProperty('password')) {
+        if (!userObj.hasOwnProperty('password')) {
             return res.status(400).send({
                 loggedIn: false,
                 message: 'Missing password.'
@@ -124,7 +210,7 @@ router.post('/register',
             console.error(err);
             fileUploaded = false;
         });
-        if(!fileUploaded) {
+        if (!fileUploaded) {
             return res.status(400).send({
                 loggedIn: false,
                 message: 'Unable to save image.'
@@ -136,7 +222,9 @@ router.post('/register',
         // Persist
         let user = new User(userObj);
         user.save(userObj)
-            .then(user => {
+            .then(async function (user) {
+                await createMIPSPerson(user, req.file);
+
                 res.status(200).send({
                     auth: true,
                     token: generateJwtToken(userObj),

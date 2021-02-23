@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const {Schema} = mongoose;
-const {extendSchema} = require('../../utils');
+const {extendSchema} = require('../../persistenceUtils');
 const symptomsSchema = require('./SymptomsSchema');
 
 const visitorDisclosureSchema = new Schema(

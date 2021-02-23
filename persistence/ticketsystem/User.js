@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const {Schema} = mongoose;
 const purchasedTicketSchema = require('./PurchasedTicketSchema');
-const {extendSchema} = require('../utils');
+const {extendSchema} = require('../persistenceUtils');
 
 // Personal information (sub document of User)
 const personalSchema = new Schema(
@@ -16,6 +16,9 @@ const personalSchema = new Schema(
         },
         salutation: {
             type: String
+        },
+        sex: {
+            type: Number
         },
         phonenumber: {
             type: String
