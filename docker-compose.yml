@@ -1,0 +1,27 @@
+version: "1"
+
+services:
+  app:
+    container_name: facetickets_backend
+    restart: always
+    build: .
+    env_file:
+      - docker.env
+    ports:
+      - "127.0.0.1:5500:5500"
+    volumes:
+      - /opt/tagflip:/opt/tagflip
+    links:
+      - mongodb
+
+  mongodb:
+    container_name: mongo_facetickets
+    image: mongo-express
+    environment:
+      - MONGO_INITDB_DATABASE=ticketsystem
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=
+    ports:
+      - "27017:27017"
+    volumes:
+      - /opt/facetickets/db:/var/lib/mongo

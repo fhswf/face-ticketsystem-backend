@@ -34,7 +34,6 @@ const config = {
         ticketSystem: {
             host: "localhost",
             password: "",
-            dialect: "mysql",
             user: "root",
             port: 27017,
             database: "ticketsystem",
