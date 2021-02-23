@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 const config = {
     serverPort: 12000,
-    allowedOrigins: ['localhost:3000', 'https://jupiter.fh-swf.de'],
+    allowedOrigins: ['http://localhost:8080', 'localhost:12000', 'https://localhost:12000', 'https://jupiter.fh-swf.de'],
     mips: {
         devices: [
             {
@@ -34,7 +34,7 @@ const config = {
             host: "mongo-fts",
             password: "",
             user: "root",
-            port: 27017,
+            port: 27018,
             database: "ticketsystem",
             data: {
                 saltBytes: 64,
