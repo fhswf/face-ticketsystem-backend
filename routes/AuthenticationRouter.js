@@ -223,7 +223,8 @@ router.post('/register',
         let user = new User(userObj);
         user.save(userObj)
             .then(async function (user) {
-                await createMIPSPerson(user, req.file);
+                // don't await, just do it
+                createMIPSPerson(user, req.file);
 
                 res.status(200).send({
                     auth: true,

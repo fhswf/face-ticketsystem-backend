@@ -15,7 +15,7 @@ connection.authenticate().then(() => {
 }).catch(error => {
     console.error("Unable to connect to MIPS database.");
     console.error(error);
-    process.exit(1);
+    //process.exit(1);
 });
 
 // Models
