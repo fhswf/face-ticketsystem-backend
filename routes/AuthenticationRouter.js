@@ -115,7 +115,15 @@ async function createMIPSPerson(user, img) {
 
 router.post('/checkEmail', (req, res, next) => {
     if (req.body && req.body.hasOwnProperty('email')) {
-        User.findOne({email: req.body.email})
+        let conditions = {email: req.body.email};
+        if (req.body.hasOwnProperty('user') && req.body.user.hasOwnProperty('_id')) {
+            conditions = {
+                ...conditions,
+                _id: {$ne: req.body.user._id}
+            };
+        }
+
+        User.findOne(conditions)
             .then(user => {
                 res.send({
                     occupied: !!user
@@ -252,20 +260,38 @@ router.get('/logout', (req, res, next) => {
 router.get('/login', (req, res, next) => {
     // Check whether the user is already logged in
     if (isLoggedIn(req)) {
-        res.send({
+        return res.send({
             loggedIn: true,
             user: req.session.user
         });
     }
-    else {
-        res.send({loggedIn: false});
+    return res.send({loggedIn: false});
+});
+
+router.post('/updateUser', (req, res, next) => {
+    // Check params
+    if (!req.hasOwnProperty('body') || !req.body.hasOwnProperty('id') || !req.body.hasOwnProperty('user')) {
+        return res.status(400).send({message: 'Missing data.'});
     }
+    if (req.body.id !== req.body.user._id) {
+        return res.status(400).send({message: 'IDs do not match.'});
+    }
+
+    User.updateOne({_id: req.body.id}, req.body.user)
+        .then(result => {
+            console.log(result);
+            res.send({updated: result.n});
+        })
+        .catch(err => {
+            console.warn(err);
+            res.send({updated: 0, message: err});
+        })
 });
 
 router.post('/login', (req, res, next) => {
     // Already logged in?
     if (isLoggedIn(req)) {
-        res.send({
+        return res.send({
             loggedIn: true,
             user: req.session.user
         });
@@ -273,25 +299,24 @@ router.post('/login', (req, res, next) => {
 
     // Check params
     if (!req.hasOwnProperty('body') || !req.body.hasOwnProperty('email') || !req.body.hasOwnProperty('password')) {
-        res.status(400).send({loggedIn: false});
+        return res.status(400).send({loggedIn: false});
     }
-    else {
-        // Find user with email
-        User.findOne({email: req.body.email})
-            .then(user => {
-                // Check password
-                let loggedIn = isPasswordCorrect(req.body.password, user);
-                let userResponse = loggedIn ? user : req.body;
-                res.send({
-                    loggedIn: loggedIn,
-                    user: userResponse
-                });
-            })
-            .catch(err => {
-                console.error(err);
-                res.send({loggedIn: false});
+
+    // Find user with email
+    User.findOne({email: req.body.email})
+        .then(user => {
+            // Check password
+            let loggedIn = isPasswordCorrect(req.body.password, user);
+            let userResponse = loggedIn ? user : req.body;
+            res.send({
+                loggedIn: loggedIn,
+                user: userResponse
             });
-    }
+        })
+        .catch(err => {
+            console.error(err);
+            res.send({loggedIn: false});
+        });
 });
 
 module.exports = router;
