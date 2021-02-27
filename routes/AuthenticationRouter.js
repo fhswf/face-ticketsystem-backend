@@ -279,7 +279,6 @@ router.post('/updateUser', (req, res, next) => {
 
     User.updateOne({_id: req.body.id}, req.body.user)
         .then(result => {
-            console.log(result);
             res.send({updated: result.n});
         })
         .catch(err => {
