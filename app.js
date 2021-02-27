@@ -9,6 +9,7 @@ const session = require('express-session');
 
 let mainRouter = require('./routes/MainRouter');
 let disclosureRouter = require('./routes/DisclosureRouter');
+let ticketRouter = require('./routes/TicketRouter');
 let authenticationRouter = require('./routes/AuthenticationRouter');
 
 let corsOptions = {
@@ -47,6 +48,7 @@ app.use(session({
 // Express Routes
 app.use('/', mainRouter);
 app.use('/disclosure', disclosureRouter);
+app.use('/ticket', ticketRouter);
 app.use('/auth', authenticationRouter);
 
 mongoose.connect(config.db.ticketSystem.mongourl);

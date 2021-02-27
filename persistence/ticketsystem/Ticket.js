@@ -46,7 +46,7 @@ const ticketSchema = new Schema(
         buyLimit: {
             type: Number
         },
-        customFields: new Schema({}, {_id: false, strict: false})
+        customFields: [new Schema({}, {_id: false, strict: false})]
     }
 );
 
