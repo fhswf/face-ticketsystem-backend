@@ -4,7 +4,10 @@ const currencySchema = require('./CurrencySchema');
 const purchasedTicketSchema = require('./PurchasedTicketSchema');
 const {extendSchema} = require('../persistenceUtils');
 
-// Buyers
+/**
+ * A Schema for defining buyers of a ticket.
+ * @type {Schema|*}
+ */
 const buyerSchema = extendSchema(
     purchasedTicketSchema,
     {
@@ -19,7 +22,10 @@ const buyerSchema = extendSchema(
     }
 );
 
-// Ticket
+/**
+ * A Schema defining a ticket.
+ * @type {Schema}
+ */
 const ticketSchema = new Schema(
     {
         number: {

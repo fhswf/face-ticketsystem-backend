@@ -2,6 +2,9 @@ let express = require('express');
 let router = express.Router();
 const Ticket = require('../persistence/ticketsystem/Ticket');
 
+/**
+ * Create a new Ticket.
+ */
 router.post('/createTicket', (req, res, next) => {
     if(req.body) {
         let ticketObj = req.body;
@@ -22,6 +25,9 @@ router.post('/createTicket', (req, res, next) => {
     }
 });
 
+/**
+ * Get all the Tickets.
+ */
 router.get('/tickets', (req, res, next) => {
     Ticket.find({})
         .then(result => {

@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
+/**
+ * Define the Sub-Schema for symptoms.
+ * @type {module:mongoose.Schema<any>}
+ */
 const symptomsSchema = new Schema(
     {
         cough: {

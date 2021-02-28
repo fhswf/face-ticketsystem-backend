@@ -1,5 +1,10 @@
 const {DataTypes} = require('sequelize');
 
+/**
+ * Define the MIPS table tb_employee_device.
+ * @param connection The connection to be used to define the table.
+ * @returns {ModelCtor<Model>|void}
+ */
 let employeeDevice = (connection) => {
     return connection.define('tb_employee_device',
         {
