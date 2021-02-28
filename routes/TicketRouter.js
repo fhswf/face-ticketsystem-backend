@@ -22,4 +22,17 @@ router.post('/createTicket', (req, res, next) => {
     }
 });
 
+router.get('/tickets', (req, res, next) => {
+    Ticket.find({})
+        .then(result => {
+            res.status(200).send({
+                tickets: result
+            })
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(400).send({message: err.toString()})
+        });
+});
+
 module.exports = router;
