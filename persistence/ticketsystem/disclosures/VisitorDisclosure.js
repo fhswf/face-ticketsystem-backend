@@ -51,7 +51,7 @@ const visitorDisclosureSchema = new Schema(
             required: false
         },
         riskdate: {
-            type: Date,
+            type: String,
             required: false
         }
     },
