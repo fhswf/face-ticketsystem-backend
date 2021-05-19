@@ -9,6 +9,7 @@ const session = require('express-session');
 
 let mainRouter = require('./routes/MainRouter');
 let disclosureRouter = require('./routes/DisclosureRouter');
+let ticketRouter = require('./routes/TicketRouter');
 let authenticationRouter = require('./routes/AuthenticationRouter');
 
 let corsOptions = {
@@ -16,7 +17,7 @@ let corsOptions = {
         if (!origin || config.allowedOrigins.indexOf(origin) !== -1)
             callback(null, true);
         else
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error('Not allowed by CORS: ' + origin));
     },
     credentials: true,
     optionsSuccessStatus: 200
@@ -29,7 +30,7 @@ app.set('port', config.serverPort);
 app.use(cors(corsOptions));
 app.use(express.json());
 // app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 // app.use(fileUpload({
 //     createParentPath: true,
@@ -40,16 +41,17 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     secret: config.session.secret,
-    cookie: {secure: true}
+    cookie: { secure: true }
 }));
 
 
 // Express Routes
 app.use('/', mainRouter);
 app.use('/disclosure', disclosureRouter);
+app.use('/ticket', ticketRouter);
 app.use('/auth', authenticationRouter);
 
-mongoose.connect('mongodb://localhost:27017/ticketsystem');
+mongoose.connect(config.db.ticketSystem.mongourl);
 
 // Start server
 let server = http.createServer(app);

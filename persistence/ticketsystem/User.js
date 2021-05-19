@@ -3,7 +3,10 @@ const {Schema} = mongoose;
 const purchasedTicketSchema = require('./PurchasedTicketSchema');
 const {extendSchema} = require('../persistenceUtils');
 
-// Personal information (sub document of User)
+/**
+ * Schema for personal information.
+ * @type {module:mongoose.Schema<any>}
+ */
 const personalSchema = new Schema(
     {
         firstname: {
@@ -45,7 +48,10 @@ const personalSchema = new Schema(
 );
 const personalModel = mongoose.model('Personal', personalSchema);
 
-// Purchased Tickets
+/**
+ * Schema for purchased tickets.
+ * @type {Schema|*}
+ */
 const ticketSchema = extendSchema(
     purchasedTicketSchema,
     {
@@ -60,7 +66,10 @@ const ticketSchema = extendSchema(
     }
 );
 
-// User information
+/**
+ * Schema for user information.
+ * @type {module:mongoose.Schema<any>}
+ */
 const userSchema = new Schema(
     {
         email: {

@@ -2,6 +2,9 @@ let express = require('express');
 let router = express.Router();
 const VisitorDisclosure = require('../persistence/ticketsystem/disclosures/VisitorDisclosure');
 
+/**
+ * Create a new visitor disclosure.
+ */
 router.post('/createVisitorDisclosure', (req, res, next) => {
     if(req.body) {
         let disclosureObj = req.body;
@@ -22,6 +25,9 @@ router.post('/createVisitorDisclosure', (req, res, next) => {
     }
 });
 
+/**
+ * Get all visitor disclosures of a user.
+ */
 router.post('/visitorDisclosures', (req, res, next) => {
     if(req.body && req.body.hasOwnProperty('userId')) {
         let userId = req.body.userId;

@@ -1,8 +1,11 @@
 const mongoose = require('mongoose');
 const {Schema} = mongoose;
-const {extendSchema} = require('../../persistenceUtils');
 const symptomsSchema = require('./SymptomsSchema');
 
+/**
+ * Define the Sub-Schema for visitor disclosures.
+ * @type {module:mongoose.Schema<any>}
+ */
 const visitorDisclosureSchema = new Schema(
     {
         visitor: {

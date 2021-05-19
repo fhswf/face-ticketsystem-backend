@@ -3,6 +3,10 @@ const config = require('../../config');
 let {employeesInfo} = require('./EmployeesInfo');
 let {employeeDevice} = require('./EmployeeDevice');
 
+/**
+ * Start/Define the connection to the MIPS db.
+ * @type {Sequelize | Model<any, string> | Transaction | BelongsTo<Model, Model>}
+ */
 const connection = new Models(config.db.mips.database, config.db.mips.user, config.db.mips.password, {
     host: config.db.mips.host,
     port: config.db.mips.port,
@@ -14,7 +18,7 @@ connection.authenticate().then(() => {
     console.info('Connected to MIPS database.');
 }).catch(error => {
     console.error("Unable to connect to MIPS database.");
-    console.error(error);
+    // console.error(error);
     //process.exit(1);
 });
 

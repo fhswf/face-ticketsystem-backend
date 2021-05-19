@@ -13,10 +13,22 @@ const {employeesInfoModel} = require('../persistence/mips/Models');
 const FormData = require('form-data');
 const fetch = require("node-fetch");
 
+/**
+ * Detect if a user is already logged in.
+ * @param request The request.
+ * @returns {boolean} True, if the user is already logged in.
+ */
 function isLoggedIn(request) {
     return request.hasOwnProperty('session') && request.session.hasOwnProperty('user');
 }
 
+/**
+ * Hash the password using pbkdf2.
+ * @param password The password to be hashed.
+ * @param salt The salt to be used.
+ * @param iterations The number of iterations for the pbkdf2 algorithm.
+ * @returns {{salt: *, iterations: *, hash: *}} The generated salt, number of used iterations and hashed password.
+ */
 function hashPassword(password, salt = null, iterations = null) {
     salt = salt ? salt : crypto.randomBytes(config.db.ticketSystem.data.saltBytes).toString('base64');
     iterations = iterations ? iterations : config.db.ticketSystem.data.pbkdf2Iterations;
@@ -38,16 +50,31 @@ function isPasswordCorrect(clearPassword, userFromDb) {
     return hashPassword(clearPassword, userFromDb.salt, userFromDb.encryptIterations).hash === userFromDb.password;
 }
 
+/**
+ * Calculate the face id.
+ * @param pictureFile The picture to use for calculating the face id.
+ * @returns {*}
+ */
 function calculateFaceId(pictureFile) {
     // TODO implement
     return pictureFile;
 }
 
+/**
+ * Generate a customer ID.
+ * @param user The user to create a customer id for.
+ * @returns {*|tb_employees_info.email|{allowNull, type}|email|{unique, type, required}}
+ */
 function generateCustomerId(user) {
     // TODO implement
     return user.email;
 }
 
+/**
+ * generate a JWT token.
+ * @param user The user to create the token for.
+ * @returns {undefined|*}
+ */
 function generateJwtToken(user) {
     let userId = user._id;
     return jwt.sign({userId}, config.session.secret, {
@@ -113,9 +140,20 @@ async function createMIPSPerson(user, img) {
     }
 }
 
+/**
+ * Determine whether or not an E-Mail is available or not.
+ */
 router.post('/checkEmail', (req, res, next) => {
     if (req.body && req.body.hasOwnProperty('email')) {
-        User.findOne({email: req.body.email})
+        let conditions = {email: req.body.email};
+        if (req.body.hasOwnProperty('user') && req.body.user.hasOwnProperty('_id')) {
+            conditions = {
+                ...conditions,
+                _id: {$ne: req.body.user._id}
+            };
+        }
+
+        User.findOne(conditions)
             .then(user => {
                 res.send({
                     occupied: !!user
@@ -130,33 +168,9 @@ router.post('/checkEmail', (req, res, next) => {
     }
 });
 
-router.post('/checkImage',
-    upload.single('file'),
-    (req, res, next) => {
-        // Check params
-        if (!req.file) {
-            return res.status(400).send({
-                hasImageOnlyOneFace: false,
-                message: 'Missing picture.'
-            });
-        }
-
-        // Check image
-        utils.hasImageOnlyOneFace(req.file)
-            .then(hasOnlyOneFace => {
-                return res.send({
-                    hasImageOnlyOneFace: hasOnlyOneFace
-                })
-            })
-            .catch(err => {
-                return res.send({
-                    hasImageOnlyOneFace: false,
-                    message: err.message
-                })
-            })
-    }
-);
-
+/**
+ * Register a new user.
+ */
 router.post('/register',
     upload.single('file'),
     async (req, res, next) => {
@@ -239,6 +253,9 @@ router.post('/register',
             });
     });
 
+/**
+ * Log the user out.
+ */
 router.get('/logout', (req, res, next) => {
     if (isLoggedIn(req)) {
         req.session.user = undefined
@@ -249,23 +266,27 @@ router.get('/logout', (req, res, next) => {
     })
 });
 
+/**
+ * Check if an user is already logged in.
+ */
 router.get('/login', (req, res, next) => {
     // Check whether the user is already logged in
     if (isLoggedIn(req)) {
-        res.send({
+        return res.send({
             loggedIn: true,
             user: req.session.user
         });
     }
-    else {
-        res.send({loggedIn: false});
-    }
+    return res.send({loggedIn: false});
 });
 
+/**
+ * Try to log an user in.
+ */
 router.post('/login', (req, res, next) => {
     // Already logged in?
     if (isLoggedIn(req)) {
-        res.send({
+        return res.send({
             loggedIn: true,
             user: req.session.user
         });
@@ -273,25 +294,46 @@ router.post('/login', (req, res, next) => {
 
     // Check params
     if (!req.hasOwnProperty('body') || !req.body.hasOwnProperty('email') || !req.body.hasOwnProperty('password')) {
-        res.status(400).send({loggedIn: false});
+        return res.status(400).send({loggedIn: false});
     }
-    else {
-        // Find user with email
-        User.findOne({email: req.body.email})
-            .then(user => {
-                // Check password
-                let loggedIn = isPasswordCorrect(req.body.password, user);
-                let userResponse = loggedIn ? user : req.body;
-                res.send({
-                    loggedIn: loggedIn,
-                    user: userResponse
-                });
-            })
-            .catch(err => {
-                console.error(err);
-                res.send({loggedIn: false});
+
+    // Find user with email
+    User.findOne({email: req.body.email})
+        .then(user => {
+            // Check password
+            let loggedIn = isPasswordCorrect(req.body.password, user);
+            let userResponse = loggedIn ? user : req.body;
+            res.send({
+                loggedIn: loggedIn,
+                user: userResponse
             });
+        })
+        .catch(err => {
+            console.error(err);
+            res.send({loggedIn: false});
+        });
+});
+
+/**
+ * Update the account information of the user.
+ */
+router.post('/updateUser', (req, res, next) => {
+    // Check params
+    if (!req.hasOwnProperty('body') || !req.body.hasOwnProperty('id') || !req.body.hasOwnProperty('user')) {
+        return res.status(400).send({message: 'Missing data.'});
     }
+    if (req.body.id !== req.body.user._id) {
+        return res.status(400).send({message: 'IDs do not match.'});
+    }
+
+    User.updateOne({_id: req.body.id}, req.body.user)
+        .then(result => {
+            res.send({updated: result.n});
+        })
+        .catch(err => {
+            console.warn(err);
+            res.send({updated: 0, message: err});
+        })
 });
 
 module.exports = router;
