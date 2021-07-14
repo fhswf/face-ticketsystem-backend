@@ -33,22 +33,37 @@ const contractorDisclosureSchema = new Schema(
             type: String,
             required: true
         },
-        symptoms: symptomsSchema,
+        vaccinated: {
+            type: Boolean,
+            default: false
+        },
+        recovered: {
+            type: Boolean,
+            default: false
+        },
+        tested: {
+            type: Boolean,
+            default: false
+        },
+        symptoms: {
+            type: symptomsSchema,
+            required: false
+        },
         returnRiskarea: {
             type: Boolean,
-            required: true
+            required: false
         },
         quarantine: {
             type: Boolean,
-            required: true
+            required: false
         },
         contactLungs: {
             type: Boolean,
-            required: true
+            required: false
         },
         contactCovid: {
             type: Boolean,
-            required: true
+            required: false
         },
         formDate: {
             type: Date,

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const {Schema} = mongoose;
+const { Schema } = mongoose;
 
 /**
  * Define the Sub-Schema for symptoms.
@@ -49,7 +49,7 @@ const symptomsSchema = new Schema(
         },
         breathless: {
             type: Boolean,
-            required: true
+            required: false
         }
     },
     {
